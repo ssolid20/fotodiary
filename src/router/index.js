@@ -2,8 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import makeFotos from '../views/makeFotos.vue';
 import App from '../App.vue'
 import Home from '../views/Home.vue';
-import favorite from '../views/favorite.vue'
-
+import favorite from '../views/favorite.vue';
+import look from '../views/lookatFoto.vue';
+import lookatFavs from '../views/lookatFoto2.vue';
 const routes = [  
   {
     path: '/',
@@ -14,6 +15,16 @@ const routes = [
     path:"/makefotos",
     name:'makefotos',
     component:makeFotos
+  },
+  {
+    path:"/lookatfoto/:info",
+    name:'look',
+    component:look
+  },
+  {
+    path:"/lookatFavFoto/:id",
+    name:'lookatfavs',
+    component:lookatFavs
   },
   {
     path:"/favorite",
