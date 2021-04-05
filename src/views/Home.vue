@@ -1,64 +1,68 @@
 <template>
- 
-  <nav class="nav-wrapper white center flow-text black-text "> <p class="fa">PhotoDiary</p> </nav>
+ <div class="navbar-fixed">
+  <nav class="nav-wrapper  white center flow-text black-text "> <p class="fa">PhotoDiary</p> </nav></div>
   <div class="container">
 
-      <div class="row">
-      <div class="col s12 m6 l4">
-        <div class="card hoverable">
-          <div class="card-image">
-            <img alt='image' class="materialboxed" src="../assets/test1.jpg">
-            
-          </div>
-          <div class="card-content center activator">
-            <span class="activator center">Name of photo</span>
-          </div>
-        <div class="card-reveal">
-            <span class="card-title grey-text text-darken-4">Description of Photo<i class="material-icons right">close</i></span>
-            <p>Here is some more information about this product that is only revealed once clicked on. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nam corrupti aspernatur, ut dignissimos pariatur nulla quibusdam consequatur cupiditate ab quidem sed cumque fuga nostrum totam perferendis quaerat porro, facere id!</p>
-        </div>
-          <div class="card-action">
-            <a href="#">This is a link</a>
-          </div>
-        </div>
-      </div>
 
-      <div class="col s12 m6 l4">
-        <div class="card hoverable">
-          <div class="card-image">
-            <img alt='image' class="materialboxed" src="../assets/test2.jpg">
-            <span class="card-title">Card Title</span>
-          </div>
-          <div class="card-content">
-            <p>I am a very simple card. I am good at containing small bits of information.
-            I am convenient because I require little markup to use effectively.</p>
-          </div>
-          <div class="card-action">
-            <a href="#">This is a link</a>
-          </div>
-        </div>
-      </div>
+      <!--<div id="modal1" class="modal">
+    <div class="modal-content">
+      <h4>{{name}}</h4>
+      <p>{{des}}</p>
+      <img :src="foto" class="responsive-img" alt="image">
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Agree</a>
     </div>
 
+            <img class=" modal-trigger" href="#modal1" alt='MYimage'  :src="`data:image/png;base64,${x.foto}`"  v-on:click="toLook(x.id)" >
 
-  </div>
+    @click="tomodal([x.name,x.describtion,x.date,`data:image/png;base64,${x.foto}`])"
+  </div>-->
 
-
-    <!--<div class="container">
-      <div class="fixed-action-btn ">
-        <router-link to="/makefotos"  class="btn-floating waves-effect waves-light btn-large hoverable blue">
-          <i class="large  material-icons">add</i>
-        </router-link>
+      <div class="row" >
+      
+<!--v-on:click="toLook(x.id)"-->
+      <div class="col s4 m4 l4 "  id='1'>
+        <div class="card   hoverable" v-for="x in test1" :key="x.id">
+          <div class="card-image ">
+            <img class=""  alt='MYimage'  :src="`data:image/png;base64,${x.foto}`"  v-on:click="toLook(x.id)" >
+          </div>
+        </div>
       </div>
-    </div>-->
+
+
+      <div class="col s4 m4 l4 "  >
+        <div class="card   hoverable" v-for="x in test2" :key="x.id">
+          <div class="card-image ">
+            <img class=" " alt='MYimage'  :src="`data:image/png;base64,${x.foto}`" v-on:click="toLook(x.id)">
+          </div>
+          
+
+        </div>
+      </div>
+      
+      <div class="col s4 m4 l4 "  id='3'>
+        <div class="card   hoverable" v-for="x in test3" :key="x.id">
+          <div class="card-image ">
+            <img class="" alt='MYimage'  :src="`data:image/png;base64,${x.foto}`" v-on:click="toLook(x.id)">
+          </div>
+   
+
+        </div>
+      </div>
+
+
+
+</div>
+</div>
+
     <div class="fixed-action-btn">
         <a class="btn-floating btn-large blue">
             <i class="large blue material-icons">menu</i>
         </a>
         <ul>
-            <li><a class="btn-floating green"><i class="material-icons">publish</i></a></li>
-            <li><router-link to='/favorite' class="btn-floating red"><i class="material-icons">favorite</i></router-link></li>
             <li><router-link to="/about" class="btn-floating blue"><i class="material-icons">person</i></router-link></li>
+            <li><router-link to='/favorite' class="btn-floating red"><i class="material-icons">favorite</i></router-link></li>
             <li><router-link to="/makefotos" class="btn-floating yellow darken-1"><i class="material-icons">add_a_photo</i></router-link></li>
         </ul>
     </div>
@@ -67,30 +71,119 @@
 </template>
 
 <script>
+import { Plugins, CameraResultType, CameraSource, CameraPhoto, 
+Capacitor, FilesystemDirectory } from "@capacitor/core";
+import { ref, onMounted, watch,onCreated ,computed} from 'vue';
+import { isPlatform } from '@ionic/vue';
+import M from 'materialize-css'
+import db from '../firebase.js'
+
 export default {
   setup(){
-     
+      const datefromfb = ref([]);
+      let name =ref('');
+      let des =ref('');
+      let date=ref('');
+      let foto=ref('')
+        db.collection('collectofcalclus').get()
+              .then(snapshot => {
+                snapshot.forEach(doc => {
+                  let smoothie = doc.data()
+                  smoothie.id = doc.id
+                  datefromfb.value.push(smoothie)
+                })
+              });
+
+      let r = ref();
+      r.value =datefromfb.value.length
+
+    let tomodal=(c)=>{
+      des.value=c[1]
+      date.value=c[2]
+      foto.value=c[3]
+    }
+
+
+      const test1 = computed(()=>{
+        let r  =datefromfb.value.length
+        let x = datefromfb.value.slice(0,r/3);
+       return  x
+
+      })
+      let test2 = computed(()=>{
+        let r =datefromfb.value.length
+        let x = datefromfb.value.slice(r/3,2*r/3)
+       return  x   
+      })
+      let test3 = computed(()=>{
+        let r =datefromfb.value.length
+        let x = datefromfb.value.slice(2*r/3,r)
+       return  x   
+      })
+       return {datefromfb,test1,test2,r,test3,tomodal,name,date,des,foto}
+  },
+  methods:{
+    toLook(c){
+        this.$router.push({ name : 'look', params: { info: c } })
+     }
   },
   mounted(){
-       $(document).ready(function(){
+
+
+
+  
+/*db.collection('collectofcalclus').add({
+                question: 'ss',
+                answer:'ss'
+            }).catch(err =>{
+                console.log(err)
+            })*/
+
+    
+    var elems = document.querySelectorAll('.materialboxed');
+    var instances = M.Materialbox.init(elems);
+
+      /* $(document).ready(function(){
           $('.materialboxed').materialbox();
-        });
+        });*/
       
           $('.fixed-action-btn').floatingActionButton({
             toolbarEnabled: false,
             direction:'up',
             hoverEnabled:false
           });
+
+
+           $(document).ready(function(){
+            $('.modal').modal();
+          });
        
   }
 }
 </script>
 
-<style>
+<style scoped>
 .fa{
 font-family: 'Hammersmith One', sans-serif;
 }
+.g{
+object-fit: cover;  
+}
+.r{
+  height: 400px;
+}
 .x{
-  color: black;
+  display: flex;
+    height: 200px;
+  align-items: center;
+}
+.row .col {
+  padding: 0 .10rem;
+}
+.card{ margin: .1rem 0 0.2rem 0;}
+@media screen and (max-width: 767px) {
+  .container{
+    width: 100%;
+  }
 }
 </style>

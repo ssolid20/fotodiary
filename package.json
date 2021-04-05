@@ -13,6 +13,9 @@
     "@ionic/pwa-elements": "^3.0.2",
     "@ionic/vue": "^5.5.4",
     "core-js": "^3.6.5",
+    "firebase": "^8.2.7",
+    "ionicons": "^5.5.0",
+    "materialize-css": "^1.0.0-rc.2",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
     "vuex": "^4.0.0-0"
