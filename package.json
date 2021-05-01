@@ -7,24 +7,26 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
-    "@capacitor/android": "^2.4.6",
-    "@capacitor/cli": "^2.4.6",
-    "@capacitor/core": "^2.4.6",
+    "@capacitor/android": "^2.4.7",
+    "@capacitor/cli": "^2.4.7",
+    "@capacitor/core": "^2.4.7",
     "@ionic/pwa-elements": "^3.0.2",
-    "@ionic/vue": "^5.5.4",
-    "core-js": "^3.6.5",
-    "firebase": "^8.2.7",
-    "ionicons": "^5.5.0",
-    "materialize-css": "^1.0.0-rc.2",
-    "vue": "^3.0.0",
-    "vue-router": "^4.0.0-0",
+    "@ionic/vue": "^5.6.5",
+    "core-js": "^3.11.0",
+    "date-fns": "^2.21.1",
+    "firebase": "^8.4.2",
+    "gsap": "^3.6.1",
+    "ionicons": "^5.5.1",
+    "materialize-css": "^1.0.0",
+    "vue": "^3.0.11",
+    "vue-router": "^4.0.6",
     "vuex": "^4.0.0-0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-router": "~4.5.0",
-    "@vue/cli-plugin-vuex": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
-    "@vue/compiler-sfc": "^3.0.0"
+    "@vue/cli-plugin-babel": "^4.5.12",
+    "@vue/cli-plugin-router": "^4.5.12",
+    "@vue/cli-plugin-vuex": "^4.5.12",
+    "@vue/cli-service": "^4.5.12",
+    "@vue/compiler-sfc": "^3.0.11"
   }
 }

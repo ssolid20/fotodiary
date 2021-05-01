@@ -1,159 +1,124 @@
 <template>
  <div class="navbar-fixed">
-  <nav class="nav-wrapper  white center flow-text black-text "> <p class="fa">PhotoDiary</p> </nav></div>
+  <nav class="nav-wrapper  white center flow-text black-text " style="border-bottom-left-radius: 15px;border-bottom-right-radius: 15px;"> <p class="fa">PhotoDiary</p> </nav></div>
   <div class="container">
-
-
-      <!--<div id="modal1" class="modal">
-    <div class="modal-content">
-      <h4>{{name}}</h4>
-      <p>{{des}}</p>
-      <img :src="foto" class="responsive-img" alt="image">
-    </div>
-    <div class="modal-footer">
-      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Agree</a>
-    </div>
-
-            <img class=" modal-trigger" href="#modal1" alt='MYimage'  :src="`data:image/png;base64,${x.foto}`"  v-on:click="toLook(x.id)" >
-
-    @click="tomodal([x.name,x.describtion,x.date,`data:image/png;base64,${x.foto}`])"
-  </div>-->
-
       <div class="row" >
-      
-<!--v-on:click="toLook(x.id)"-->
-      <div class="col s4 m4 l4 "  id='1'>
-        <div class="card   hoverable" v-for="x in test1" :key="x.id">
-          <div class="card-image ">
-            <img class=""  alt='MYimage'  :src="`data:image/png;base64,${x.foto}`"  v-on:click="toLook(x.id)" >
-          </div>
-        </div>
-      </div>
-
-
-      <div class="col s4 m4 l4 "  >
-        <div class="card   hoverable" v-for="x in test2" :key="x.id">
-          <div class="card-image ">
-            <img class=" " alt='MYimage'  :src="`data:image/png;base64,${x.foto}`" v-on:click="toLook(x.id)">
-          </div>
+      <div class="col s12 "  id='1'>
+        <div class="card border " v-for="x in datefromfb" :key="x.id">
           
-
-        </div>
-      </div>
-      
-      <div class="col s4 m4 l4 "  id='3'>
-        <div class="card   hoverable" v-for="x in test3" :key="x.id">
+         <div class="collection border" @click="testfunc(x.createdBy)"> 
+          <div class="collection-item avatar">  <img :src="`data:image/png;base64,${x.avatar}`" alt="" class="circle">
+          <p class="title">{{x.displayName}} </p>
+          <p>posted {{x.createdAt}} ago </p>
+         </div>
+         </div> 
           <div class="card-image ">
-            <img class="" alt='MYimage'  :src="`data:image/png;base64,${x.foto}`" v-on:click="toLook(x.id)">
+            <img class=""  alt='MYimage' @click="toLook(x.id)"  :src="`data:image/png;base64,${x.source}`"   >
+
           </div>
+          <div class="card-content">
+            <p style="padding-left:12px;" class="overflow flow-text " @click="toLook(x.id)">{{x.message}}</p>
+            <p style="padding-left:12px;" class="flow-text "  v-if="x.likedBy.length != 'undefined'">Liked by {{x.likedBy.length}} people</p>
    
+            </div>
+  
 
         </div>
       </div>
-
-
-
 </div>
 </div>
 
-    <div class="fixed-action-btn">
-        <a class="btn-floating btn-large blue">
-            <i class="large blue material-icons">menu</i>
-        </a>
-        <ul>
-            <li><router-link to="/about" class="btn-floating blue"><i class="material-icons">person</i></router-link></li>
-            <li><router-link to='/favorite' class="btn-floating red"><i class="material-icons">favorite</i></router-link></li>
-            <li><router-link to="/makefotos" class="btn-floating yellow darken-1"><i class="material-icons">add_a_photo</i></router-link></li>
-        </ul>
-    </div>
-      
+
 
 </template>
 
 <script>
-import { Plugins, CameraResultType, CameraSource, CameraPhoto, 
-Capacitor, FilesystemDirectory } from "@capacitor/core";
+
 import { ref, onMounted, watch,onCreated ,computed} from 'vue';
-import { isPlatform } from '@ionic/vue';
 import M from 'materialize-css'
-import db from '../firebase.js'
+import { useRoute, useRouter } from 'vue-router'
+import { formatDistanceToNow } from 'date-fns'
+
+import firebase from '../firebase.js'
+import getUser from '../composables/getUser'
 
 export default {
   setup(){
+      let router = useRouter()
+      const { user } = getUser()
+      let {projectFirestore,projectAuth} = firebase
       const datefromfb = ref([]);
-      let name =ref('');
-      let des =ref('');
-      let date=ref('');
-      let foto=ref('')
-        db.collection('collectofcalclus').get()
-              .then(snapshot => {
-                snapshot.forEach(doc => {
-                  let smoothie = doc.data()
-                  smoothie.id = doc.id
-                  datefromfb.value.push(smoothie)
-                })
-              });
-
-      let r = ref();
-      r.value =datefromfb.value.length
-
-    let tomodal=(c)=>{
-      des.value=c[1]
-      date.value=c[2]
-      foto.value=c[3]
-    }
+      const test = ref([])
+      let ok = ref(false)
+              let changebutt = ref(true)
 
 
-      const test1 = computed(()=>{
-        let r  =datefromfb.value.length
-        let x = datefromfb.value.slice(0,r/3);
-       return  x
+      projectFirestore.collection(user.value.email).get()
+        .then(snap=>{
+          snap.forEach(doc=>{
+            let subs1 = doc.data().subs
+            subs1.forEach(x=>{
+              projectFirestore.collection(`all-fotos`).where('createdBy','==',x)
+                     .onSnapshot(snap=>{
+                       snap.forEach(z=>{
+                      let foto = doc.data()
+                       foto.message =z.data().message
+                       console.log(foto.message)
+                       foto.createdBy= z.data().createdBy
+                       foto.likedBy = z.data().likedBy
+                       console.log(z.data().likedBy)
+                       foto.createdAt= formatDistanceToNow(z.data().createdAt.toDate())
+                       foto.source = z.data().foto
+                       foto.id = z.id
+                        projectFirestore.collection(foto.createdBy)
+                          .get().then(snap=>{
+                            snap.forEach(doc=>{
+                              let data=doc.data()
+                              console.log(foto)
+                              foto.avatar= doc.data().avatar
+                              foto.displayName = doc.data().displayName
+                              console.log(foto)
+                              datefromfb.value.push(foto)
+                            })
+                          })
+                       console.log(foto)
+                       console.log(datefromfb.value)
+                       //datefromfb.value.push(foto)
+                       console.log(datefromfb.value)
 
-      })
-      let test2 = computed(()=>{
-        let r =datefromfb.value.length
-        let x = datefromfb.value.slice(r/3,2*r/3)
-       return  x   
-      })
-      let test3 = computed(()=>{
-        let r =datefromfb.value.length
-        let x = datefromfb.value.slice(2*r/3,r)
-       return  x   
-      })
-       return {datefromfb,test1,test2,r,test3,tomodal,name,date,des,foto}
-  },
-  methods:{
-    toLook(c){
-        this.$router.push({ name : 'look', params: { info: c } })
-     }
+
+
+                      })
+                   })
+            })
+          })
+        })
+
+      let likepressed=(x)=>{
+        changebutt.value=!changebutt.value
+      }
+
+      console.log(datefromfb.value)
+     
+      let toLook =(c)=>{router.push({ name : 'look', params: { info: c } })}
+      let testfunc =(x)=>{router.push({name:'profileof',params:{email:x}})}
+
+       return {ok,test,datefromfb,toLook,projectFirestore,projectAuth,testfunc,likepressed,changebutt}
   },
   mounted(){
 
-
-
-  
-/*db.collection('collectofcalclus').add({
-                question: 'ss',
-                answer:'ss'
-            }).catch(err =>{
-                console.log(err)
-            })*/
-
-    
     var elems = document.querySelectorAll('.materialboxed');
     var instances = M.Materialbox.init(elems);
-
-      /* $(document).ready(function(){
-          $('.materialboxed').materialbox();
-        });*/
-      
           $('.fixed-action-btn').floatingActionButton({
             toolbarEnabled: false,
             direction:'up',
             hoverEnabled:false
           });
 
-
+          $(document).ready(function(){
+            $('.tabs').tabs({swipeable:true});
+          });
+    
            $(document).ready(function(){
             $('.modal').modal();
           });
@@ -166,8 +131,19 @@ export default {
 .fa{
 font-family: 'Hammersmith One', sans-serif;
 }
+
+.color{
+  color: #2196f3;
+}
 .g{
 object-fit: cover;  
+}
+nav ul li {
+  
+    padding: 10px;
+}
+.border{
+    border-radius: 15px;
 }
 .r{
   height: 400px;
@@ -177,13 +153,61 @@ object-fit: cover;
     height: 200px;
   align-items: center;
 }
+.collection {margin: 0;}
+.collection .collection-item.avatar {
+  padding-bottom: 10px;
+  min-height: 0px;
+}
 .row .col {
   padding: 0 .10rem;
 }
+.margin{
+  padding-left: 10px;
+}
+.overflow{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis
+}
+.flex2{
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 5px;
+}
+.test{
+  bottom: 0;
+  position: fixed;
+  width: 100%;
+    overflow: hidden;
+
+}
+.flex3{
+  display: flex;
+  justify-content: space-around;
+}
+.welcome  {
+    display: block;
+    margin: 20px 0 10px;
+}
+.welcome  {
+    width: 80%;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #eee;
+    outline: none;
+    color: #999;
+    margin: 10px auto;
+}
+input:not([type]), input[type=text]:not(.browser-default), input[type=password]:not(.browser-default), input[type=email]:not(.browser-default), input[type=url]:not(.browser-default), input[type=time]:not(.browser-default), input[type=date]:not(.browser-default), input[type=datetime]:not(.browser-default), input[type=datetime-local]:not(.browser-default), input[type=tel]:not(.browser-default), input[type=number]:not(.browser-default), input[type=search]:not(.browser-default), textarea.materialize-textarea {
+     border-radius: 15px; 
+     width: 80%;
+} 
+.card .card-content {padding: 12px; margin-bottom: 10px;}
 .card{ margin: .1rem 0 0.2rem 0;}
 @media screen and (max-width: 767px) {
   .container{
-    width: 100%;
+      width: 95%;
+
   }
 }
 </style>

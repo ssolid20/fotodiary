@@ -1,46 +1,230 @@
 <template>
  <div class="navbar-fixed">
-  <nav class="nav-wrapper white center flow-text black-text "> <p class="fa">About Page</p> </nav></div>
+  <nav class="nav-wrapper white center flow-text black-text " style="border-bottom-left-radius: 15px;border-bottom-right-radius: 15px;"> <p class="fa">Your Profile</p> </nav></div>
     <div class="container">
     
-    <div class="col   x s12 m7">
-    <div class="card  ">
+    <div class="col x s12 m7">
+    <div class="card border">
 
       <div class="card-stacked">
+
+      <div class="collection border"> 
+        <div class="collection-item avatar"> 
+         <img :src="`data:image/png;base64,${aboutuser.avatar}`" alt="" class="materialboxed circle">
+          <p class="title"> Hey there {{user.displayName}} </p>
+          <p class="">Currently logged in as {{ user.email  }}</p>  
+         </div>
+         </div> 
+
+
         <div class="card-content">
-          <p>This App "PhotoDiary" permits you to have own diary where you can easily make photo during important momemt for you and share short thoughts about that</p>
+          <div class="flex">
+          <button class="btn-floating blue" @click="addAvatar"> 
+            <i class="material-icons">account_circle</i></button>
+          
+
+          <button class="btn-floating blue" @click="gotofotos">
+            <i class="material-icons">camera</i>
+          </button>
+
+          <button class="btn-floating blue" @click="showInput=!showInput">
+            <i class="material-icons">edit</i>
+          </button>
+
+          <button class="btn-floating blue" @click="handleClick">
+            <i class="material-icons">logout</i>
+          </button>
+          </div>
+          
+          <div v-if="showInput" class="input-field  col s12">
+            <div class="flex2">
+            <input @keypress.enter="editDescription" class="welcome border" id="icon_prefix" required placeholder="Change your describtion" type="text" v-model="editedDescribtion" >
+            <button @click="editDescription" class="btn-floating blue"><i class="material-icons">check</i>
+            </button>
+          </div></div>
+
+          <p class="flow-text">{{aboutuser.describtion}}</p>
+          <p class="flow-text"> Your subscriptions: {{aboutuser.subs.length}}</p>
+      
         </div>
    
       </div>
     </div>
-  </div>
-            
-
-
-
-
-      <div class="fixed-action-btn ">
-        <router-link to="/"  class="btn-floating waves-effect waves-light btn-large hoverable blue">
-          <i class="large  material-icons">keyboard_backspace</i>
-        </router-link>
+      <div class="row" >
+      <div class="col s12 "  id='1'>
+        <div class="card border " v-for="x in datafromdb" :key="x.id">
+          
+         <div class="collection border"> 
+            <div class="collection-item avatar">  <img  :src="`data:image/png;base64,${aboutuser.avatar}`" alt="" class="circle">
+          <p class="title">{{aboutuser.displayName}} </p>
+          <p>posted {{x.createdAt}} ago </p>
+         </div>
+         </div> 
+          <div class="card-image ">
+            <img class="materialboxed" @click="toLook(x.id)" alt='MYimage'  :src="`data:image/png;base64,${x.foto}`"   >
+            <a class="left btn-floating halfway-fab  black" @click="deletefoto(x.id)"><i class="material-icons">delete</i></a>
+          </div>
+          <p class="card-content2 flow-text " @click="toLook(x.id)">{{x.message}}</p>
+        </div>
       </div>
+</div>
+</div>   
+
+
+
+
+ 
+
     </div>
 
 </template>
 
 
 <script>
+import getUser from '../composables/getUser'
+import useLogout from '../composables/useLogout'
+import { useRoute, useRouter } from 'vue-router'
+import firebase from '../firebase.js'
+import { ref, onMounted, watch,onCreated ,computed} from 'vue';
+import { Plugins, CameraResultType, CameraSource, CameraPhoto, 
+Capacitor, FilesystemDirectory } from "@capacitor/core";
+import { formatDistanceToNow } from 'date-fns'
+
 export default {
+  setup(){
+    const { Camera, } = Plugins;
+    let router=useRouter()
+    const { user } = getUser()
+    const { logout, error } = useLogout()
+    const {projectFirestore} = firebase
+    const datafromdb = ref([])
+    let aboutuser = ref([])
+    let foto = ref()
+    let idof = ref()
+    let editedDescribtion = ref()
+    let showInput=ref(false)
+
+
+    let editDescription=()=>{
+        projectFirestore.collection(`${user.value.email}`).doc(idof.value).update({
+                describtion: editedDescribtion.value,
+            }).catch(err =>{
+                console.log(err)
+            })
+            showInput.value=!showInput.value
+    }
+
+
+    projectFirestore.collection(`all-fotos`).where('createdBy','==',`${user.value.email}`)
+      .get().then(snapshot => {
+            snapshot.forEach(doc => {
+              let smoothie = doc.data()
+              smoothie.id = doc.id
+              smoothie.createdAt= formatDistanceToNow(doc.data().createdAt.toDate())
+              datafromdb.value.push(smoothie)
+                })
+              });
+  
+  projectFirestore.collection(`${user.value.email}`)
+    .onSnapshot(snapshot =>{
+            snapshot.forEach(doc=>{
+              let g = doc.data()
+              g.avatar=doc.data().avatar
+              g.subs = doc.data().subs
+              g.id = doc.id
+              idof.value =doc.id
+              aboutuser.value= g
+
+            })})
+
+    const addAvatar= async() =>{
+       const cameraPhoto = await Camera.getPhoto({
+            resultType: CameraResultType.Base64,
+            source: CameraSource.Camera,
+            quality: 20
+        });
+      
+        foto.value=cameraPhoto.base64String
+        M.toast({html: "Photo was taken "})
+        projectFirestore.collection(`${user.value.email}`).doc(idof.value).update({
+                avatar: foto.value,
+            }).catch(err =>{
+                console.log(err)
+            })
+        console.log(user.value)
+        //foto.value = []
+
+    }
+
+        onMounted(()=>{
+              $(document).ready(function(){
+                $('.materialboxed').materialbox();
+            });
+        })
+
+    let deletefoto=(x)=>{
+      projectFirestore.collection(`all-fotos`).doc(x).delete()
+      console.log('deleted')
+      datafromdb.value = datafromdb.value.filter(f=>{
+        return f.id != x
+      })
+    }
+    let toLook =(c)=>{router.push({ name : 'look', params: { info: c } })}
+    let gotofotos=()=>{router.push({name:'makefotos'})}
+    let goback=()=>{router.go(-1)}
+
+    const handleClick = async () => {
+      await logout()
+      router.push({name:'welcome'})
+      console.log('logout')
+
+    }
+    return{gotofotos,toLook,deletefoto,goback,editedDescribtion,editDescription,showInput,user,foto,addAvatar,aboutuser,handleClick,logout,error,datafromdb,idof}
+  }
 
 }
 </script>
 
 <style scoped> 
-.fa{
-font-family: 'Hammersmith One', sans-serif;
+.fa{font-family: 'Hammersmith One', sans-serif;}
+.x{margin-top:5%;}
+.border{border-radius: 15px;}
+.collection {margin: 0;}
+.collection .collection-item.avatar {min-height: 0px;}
+.flex{
+  display: flex;
+  justify-content: space-around;
+  padding-bottom: 5px;
 }
-.x{
-margin-top:5%;
+.card-content2 {padding: 12px;}
 
+.flex2{
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 5px;
+}
+
+.welcome  {
+    display: block;
+    margin: 20px 0 10px;
+}
+.welcome  {
+    width: 80%;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #eee;
+    outline: none;
+    color: #999;
+    margin: 10px auto;
+}
+input:not([type]), input[type=text]:not(.browser-default), input[type=password]:not(.browser-default), input[type=email]:not(.browser-default), input[type=url]:not(.browser-default), input[type=time]:not(.browser-default), input[type=date]:not(.browser-default), input[type=datetime]:not(.browser-default), input[type=datetime-local]:not(.browser-default), input[type=tel]:not(.browser-default), input[type=number]:not(.browser-default), input[type=search]:not(.browser-default), textarea.materialize-textarea {
+     border-radius: 15px; 
+     width: 80%;
+} 
+@media screen and (max-width: 767px) {
+  .container{
+      width: 95%;
+
+  }
 }
 </style>
