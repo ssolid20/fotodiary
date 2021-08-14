@@ -13,7 +13,7 @@
 
           <div class="collection border" @click="testfunc(x.email)">
             <div class="collection-item avatar">
-              <img :src="`data:image/png;base64,${x.avatar}`" alt="" class="circle">
+              <img :src="`${x.avatar}`" alt="" class="circle">
               <span class="title">{{x.displayName}}</span>
               <p>Tap to see  profile<br>
               </p>

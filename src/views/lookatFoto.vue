@@ -7,13 +7,13 @@
         <div class="card border "  >
           
          <div class="collection border" @click="testfunc(foto.createdBy)"> 
-          <div class="collection-item avatar">  <img :src="`data:image/png;base64,${aboutproper.avatar}`" alt="" class="circle">
+          <div class="collection-item avatar">  <img :src="`${aboutproper.avatar}`" alt="" class="circle">
           <p class="title">{{aboutproper.displayName}} </p>
           <p>posted {{foto.createdAt}} ago </p>
          </div>
          </div> 
           <div class="card-image ">
-            <img class="materialboxed"  alt='MYimage'   :src="`data:image/png;base64,${foto.foto}`"   >
+            <img class="materialboxed"  alt='MYimage'   :src="`${foto.foto}`"   >
             <a v-if="changebutt ==  true" @click="likedAdd" class="left btn-floating halfway-fab  red"><i class="material-icons">favorite</i></a>
             <a v-else @click="DelLike" class="left btn-floating halfway-fab  yellow"><i class="material-icons">stars</i></a>
 

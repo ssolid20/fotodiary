@@ -10,7 +10,7 @@
 
       <div class="collection border"> 
         <div class="collection-item avatar"> 
-         <img :src="`data:image/png;base64,${aboutuser.avatar}`" alt="foto" class="materialboxed circle">
+         <img :src="`${aboutuser.avatar}`" alt="foto" class="materialboxed circle">
           <p class="title">  {{aboutuser.displayName}} </p>
          </div>
          </div> 
@@ -39,13 +39,13 @@
         <div class="card  border " v-for="x in fotofromdb" :key="x.id">
           
          <div class="collection border"> 
-            <div class="collection-item avatar">  <img :src="`data:image/png;base64,${aboutuser.avatar}`" alt="" class="circle">
+            <div class="collection-item avatar">  <img :src="`${aboutuser.avatar}`" alt="" class="circle">
           <p class="title">{{aboutuser.displayName}} </p>
           <p>posted {{x.createdAt}} ago </p>
          </div>
          </div> 
           <div class="card-image ">
-            <img  @click="toLook(x.id)"  alt='MYimage'  :src="`data:image/png;base64,${x.foto}`"   >
+            <img  @click="toLook(x.id)"  alt='MYimage'  :src="`${x.foto}`"   >
           </div>
           <div class="card-content2">
             <p class="  flow-text" @click="toLook(x.id)">{{x.message}}</p>

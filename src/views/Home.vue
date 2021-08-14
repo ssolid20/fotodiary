@@ -7,13 +7,13 @@
         <div class="card border " v-for="x in datefromfb" :key="x.id">
           
          <div class="collection border" @click="testfunc(x.createdBy)"> 
-          <div class="collection-item avatar">  <img :src="`data:image/png;base64,${x.avatar}`" alt="" class="circle">
+          <div class="collection-item avatar">  <img :src="`${x.avatar}`" alt="" class="circle">
           <p class="title">{{x.displayName}} </p>
           <p>posted {{x.createdAt}} ago </p>
          </div>
          </div> 
           <div class="card-image ">
-            <img class=""  alt='MYimage' @click="toLook(x.id)"  :src="`data:image/png;base64,${x.source}`"   >
+            <img class=""  alt='MYimage' @click="toLook(x.id)"  :src="`${x.source}`"   >
 
           </div>
           <div class="card-content">

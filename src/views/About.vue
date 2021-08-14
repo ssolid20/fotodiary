@@ -10,7 +10,7 @@
 
       <div class="collection border"> 
         <div class="collection-item avatar"> 
-         <img :src="`data:image/png;base64,${aboutuser.avatar}`" alt="" class="materialboxed circle">
+         <img :src="`${aboutuser.avatar}`" alt="" class="materialboxed circle">
           <p class="title"> Hey there {{user.displayName}} </p>
           <p class="">Currently logged in as {{ user.email  }}</p>  
          </div>
@@ -19,9 +19,13 @@
 
         <div class="card-content">
           <div class="flex">
-          <button class="btn-floating blue" @click="addAvatar"> 
-            <i class="material-icons">account_circle</i></button>
+          <button class="btn-floating blue" @click="showconfirm=!showconfirm" > 
+            
+             <input type="file"  @change="handleChange"> <i class="material-icons">camera</i> <input> </button>
           
+          <button v-if="showconfirm" class="btn-floating blue" @click="sendImage">
+            <i class="material-icons">user</i>
+          </button>
 
           <button class="btn-floating blue" @click="gotofotos">
             <i class="material-icons">camera</i>
@@ -55,13 +59,13 @@
         <div class="card border " v-for="x in datafromdb" :key="x.id">
           
          <div class="collection border"> 
-            <div class="collection-item avatar">  <img  :src="`data:image/png;base64,${aboutuser.avatar}`" alt="" class="circle">
+            <div class="collection-item avatar">  <img  :src="`${aboutuser.avatar}`" alt="" class="circle">
           <p class="title">{{aboutuser.displayName}} </p>
           <p>posted {{x.createdAt}} ago </p>
          </div>
          </div> 
           <div class="card-image ">
-            <img class="materialboxed" @click="toLook(x.id)" alt='MYimage'  :src="`data:image/png;base64,${x.foto}`"   >
+            <img class="materialboxed" @click="toLook(x.id)" alt='MYimage'  :src="`${x.foto}`"   >
             <a class="left btn-floating halfway-fab  black" @click="deletefoto(x.id)"><i class="material-icons">delete</i></a>
           </div>
           <p class="card-content2 flow-text " @click="toLook(x.id)">{{x.message}}</p>
@@ -89,10 +93,14 @@ import { ref, onMounted, watch,onCreated ,computed} from 'vue';
 import { Plugins, CameraResultType, CameraSource, CameraPhoto, 
 Capacitor, FilesystemDirectory } from "@capacitor/core";
 import { formatDistanceToNow } from 'date-fns'
+import useStorage from '../composables/useStorage'
 
 export default {
   setup(){
     const { Camera, } = Plugins;
+    const {filePath,url,uploadImage} =useStorage()
+    let file =ref(null);
+    let showconfirm = ref(false)
     let router=useRouter()
     const { user } = getUser()
     const { logout, error } = useLogout()
@@ -103,6 +111,7 @@ export default {
     let idof = ref()
     let editedDescribtion = ref()
     let showInput=ref(false)
+    const fileError=ref(null)
 
 
     let editDescription=()=>{
@@ -136,7 +145,36 @@ export default {
               aboutuser.value= g
 
             })})
+    const types =['image/png','image/jpeg']
 
+    let handleChange=(e)=>{
+      let selected = e.target.files[0]
+      console.log(selected)
+      if (selected && types.includes(selected.type)){
+        file.value =selected
+        fileError.value=null
+
+      }else{
+        file.value= null
+        fileError.value = 'please select an image file (png or jpeg)'
+      }
+    }
+    let sendImage= async()=>{
+      if(file.value){
+        await uploadImage(file.value)
+        console.log("image uploaded ,url:",url.value )
+         projectFirestore.collection(`${user.value.email}`).doc(idof.value).update({
+                avatar: url.value,
+            }).catch(err =>{
+                console.log(err)
+            })
+          M.toast({html: "Photo was taken "})
+
+        console.log(user.value)
+        //foto.value = []
+      }
+      
+    }
     const addAvatar= async() =>{
        const cameraPhoto = await Camera.getPhoto({
             resultType: CameraResultType.Base64,
@@ -179,7 +217,7 @@ export default {
       console.log('logout')
 
     }
-    return{gotofotos,toLook,deletefoto,goback,editedDescribtion,editDescription,showInput,user,foto,addAvatar,aboutuser,handleClick,logout,error,datafromdb,idof}
+    return{file,fileError,gotofotos,sendImage ,showconfirm,  handleChange,toLook,deletefoto,goback,editedDescribtion,editDescription,showInput,user,foto,addAvatar,aboutuser,handleClick,logout,error,datafromdb,idof}
   }
 
 }

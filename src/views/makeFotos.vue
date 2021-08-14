@@ -12,12 +12,13 @@
         <div class="card border ">
           
          <div class="collection border" @click="testfunc(x.email)"> 
-          <div class="collection-item avatar">  <img :src="`data:image/png;base64,${aboutuser.avatar}`" alt="" class="circle">
+          <div class="collection-item avatar">  <img :src="`${aboutuser.avatar}`" alt="" class="circle">
           <p class="title">{{aboutuser.displayName}} </p>
+
          </div>
          </div> 
           <div class="card-image ">
-            <img class=""  alt='MYimage' @click="toLook(x.id)"  :src="`data:image/png;base64,${x}`"   >
+            <img class=""  alt='MYimage' @click="toLook(x.id)"  :src="`${x}`"   >
           </div>
           <div class="">
             <p  class="card-content flow-text " >{{message}}</p>
@@ -37,6 +38,10 @@
      <form class="xe" v-on:submit='handleSubmit'>
 
        <div class="input-field  col s12">
+         <input type="file"  @change="handleChange">
+         <button @click="sendImage">send Image</button>
+            <img v-if="file" :src="`/${file.webkitRelativePath}`" alt="test image">
+          <p style="color:red">{{fileError}}</p>
           <input class="welcome border"  autocomplete="off" required placeholder="Write Describtion" type="text" v-model="message" >
         </div>
           <a class="btn-floating blue   right" v-on:click="handleSubmit">
@@ -57,7 +62,7 @@
 </template>
 
 <script>
-
+import useStorage from '../composables/useStorage'
 import {useRouter} from 'vue-router'
   import { Plugins, CameraResultType, CameraSource, CameraPhoto, 
   Capacitor, FilesystemDirectory } from "@capacitor/core";
@@ -68,12 +73,15 @@ import getUser from '../composables/getUser'
 export default {
   name: 'Home',
   setup(){
+  const {filePath,url,uploadImage} =useStorage()
   const { Camera, } = Plugins;
     const foto = ref([]);
     const message = ref('');
+    let file =ref(null);
     const { user } = getUser()
     const router = useRouter();
     let aboutuser =ref()
+    const fileError=ref(null)
     let {timestamp,projectFirestore} =firebase
 
 
@@ -87,14 +95,33 @@ export default {
               aboutuser.value= g
 
             })})
-
+    let sendImage= async()=>{
+      if(file.value){
+        await uploadImage(file.value)
+        console.log("image uploaded ,url:",url.value )
+      }
+      
+    }
 
     let goback=()=>{router.go(-1)}
+    const types =['image/png','image/jpeg']
 
+    let handleChange=(e)=>{
+      let selected = e.target.files[0]
+      console.log(selected)
+      if (selected && types.includes(selected.type)){
+        file.value =selected
+        console.log(file.value.name)
+        fileError.value=null
 
+      }else{
+        file.value= null
+        fileError.value = 'please select an image file (png or jpeg)'
+      }
+    }
 
     const takePhoto = async () => {
-        const cameraPhoto = await Camera.getPhoto({
+    const cameraPhoto = await Camera.getPhoto({
             resultType: CameraResultType.Base64,
             source: CameraSource.Camera,
             quality: 20
@@ -102,6 +129,7 @@ export default {
         foto.value = []
         foto.value.push(cameraPhoto.base64String)
         M.toast({html: "Photo was taken "})
+
 
 
     };
@@ -112,10 +140,17 @@ export default {
     // refs
     const mes = ref('')
     const handleSubmit = async () => {
+
+        if(file.value){
+          await uploadImage(file.value)
+          console.log("image uploaded ,url:",url.value )
+        }
+        
+    
       const chat = {
         message: message.value,
         createdAt: timestamp(),
-        foto:foto.value,
+        foto:url.value,
         createdBy:user.value.email,
         likedBy:[],
         comments:[]
@@ -134,7 +169,7 @@ export default {
       message.value = c
     }       
       return {goback,
-        aboutuser,takePhoto,message,foto,delet,user,handleSubmit,router
+        aboutuser,takePhoto,message,file,foto,delet,user,handleSubmit,router,handleChange,fileError,sendImage
       };
   },
     methods:{

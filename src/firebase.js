@@ -1,6 +1,7 @@
   // Your web app's Firebase configuration
 import firebase from 'firebase/app'
 import firestore from 'firebase/firestore'
+import 'firebase/storage'
 import 'firebase/auth'
 var firebaseConfig = {
   apiKey: "AIzaSyDpXWDZoL2nIDxfZivxoQfkFSvzQ4ue9tE",
@@ -19,10 +20,10 @@ firebase.initializeApp(firebaseConfig)
 const projectAuth = firebase.auth()
 const projectFirestore = firebase.firestore()
 const timestamp = firebase.firestore.FieldValue.serverTimestamp
-
+const projectStorage = firebase.storage()
 /*let projectAuth = firebase.auth()
 const x  = firebase.initializeApp(firebaseConfig);
 let firestore1 = x.firestore()
 let timestamp =  firebase.firestore.FieldValue.serverTimestamp
 firestore1.settings({timestampsInSnapshots:true})*/
-export default {projectFirestore,projectAuth,timestamp}
+export default {projectFirestore,projectAuth,projectStorage,timestamp}
